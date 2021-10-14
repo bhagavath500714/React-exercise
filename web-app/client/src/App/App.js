@@ -1,6 +1,8 @@
 import './App.scss';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Root from '../Root'
+import { Provider } from 'react-redux'
+import store from '../store/store'
 
 const theme = createTheme({
   palette: {
@@ -32,13 +34,15 @@ const theme = createTheme({
     "fontWeightLight": 300,
     "fontWeightRegular": 400,
     "fontWeightMedium": 500
-   },
+  },
 })
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
-    <Root />
+      <Provider store={store}>
+        <Root />
+      </Provider>
     </ThemeProvider>
   );
 }

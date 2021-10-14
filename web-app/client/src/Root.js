@@ -1,25 +1,34 @@
 import React from 'react'
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { createBrowserHistory } from 'history';
 import Register from './components/register/Register';
-import Login from './components/login/Login';
-import Dashboard from './components/dashboard/Dashboard';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import Navbar from './components/Navbar';
+import Header from './components/Header';
 
-
+const useStyles = makeStyles({
+  appMain: {
+    paddingLeft: 320,
+    width: '100%'
+  }
+})
 
 export default function Root() {
     const history = createBrowserHistory();
+    const classes = useStyles();
 
 
     const wrapHeaderAndSidebar = (component) => {
         return (
           <Box flex={1} display="flex" flexDirection="row">
             <Box>
-                <p>sidebar</p>
+                <Navbar />
             </Box>
-            <Box flex={1}>
-              <p>Header</p>
+            <Box flex={1} className={classes.appMain}>
+              <Header />
               <Box>
                 {component}
               </Box>

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Grid, Box, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import Controls from '../../controls/Controls';
-import { useForm, Form } from '../../hooks/useForm';
-import * as employeeService from '../../services/employeeServices';
+import Controls from '../controls/Controls';
+import { useForm, Form } from '../hooks/useForm';
+import * as employeeService from '../services/employeeServices';
 import { createBrowserHistory } from 'history';
 import { useHistory, Link } from "react-router-dom"
 
