@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
 export default function Dashboard() {
   const classes = useStyles();
   const [records, setRecords] = useState([])
-  const { TblContainer, TblHead } = useTable(records, headCells);
+  const { TblContainer, TblHead, TblPagination, recordsAfterPagingAndSorting } = useTable(records, headCells);
 
   useEffect(() => {
     getUsers()
@@ -49,7 +49,7 @@ export default function Dashboard() {
       <TblContainer>
         <TblHead />
         <TableBody>
-          {records.map(item => (<TableRow key={item.id}>
+          {recordsAfterPagingAndSorting().map(item => (<TableRow key={item.id}>
             <TableCell>{item.fullName}</TableCell>
             <TableCell>{item.email}</TableCell>
             <TableCell>{item.mobile}</TableCell>
@@ -57,6 +57,7 @@ export default function Dashboard() {
           </TableRow>))}
         </TableBody>
       </TblContainer>
+      <TblPagination />
     </Paper>
     </>
   )
