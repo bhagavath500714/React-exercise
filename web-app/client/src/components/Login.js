@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Grid, Box, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Controls from '../controls/Controls';
 import { useForm, Form } from '../hooks/useForm';
 import * as employeeService from '../services/employeeServices';
 import { createBrowserHistory } from 'history';
-import { useHistory, Link } from "react-router-dom"
+import { useHistory, Link } from "react-router-dom";
+import { useDispatch, useSelector, connect } from 'react-redux'
+import Notification from '../hooks/Notification';
 
 const useStyles = makeStyles(theme => ({
   loginWrap: {
@@ -54,10 +56,12 @@ const initialFvalue = {
 
 
 const Login = () => {
+  const [notify, setNotify] = useState({isOpen:false, message:'', type:'info'});
   const classes = useStyles();
   const history = useHistory();
-  let browserHitory = createBrowserHistory()
-
+  let browserHitory = createBrowserHistory();
+  const dispatch = useDispatch();
+  
   const validate = (fieldValues = values) => {
     let temp = { ...errors }
     if ('email' in fieldValues)
@@ -80,8 +84,16 @@ const Login = () => {
        if(res.data.success === 1) {
         window.sessionStorage.setItem("token", res.data.token);
         window.sessionStorage.setItem("email", values.email);
+        dispatch({ type: 'SET_USER', value: res})
         history.replace("/dashboard");
         browserHitory.replace("/dashboard");
+      }
+      if(res.data.success === 0) {
+        setNotify({
+          isOpen: true,
+          message: 'Invalid user',
+          type: 'error'
+        })
       }
     })
   }
@@ -96,8 +108,8 @@ const Login = () => {
             <Typography variant="h5" gutterBottom component="div" mb={2} className={classes.signinTxt}>
         SIGN IN
       </Typography>
-              <Controls.Input variant="standard" name="email" label="email" value={values.email} onChange={handleInputChange} error={errors.email} />
-              <Controls.Input variant="standard" name="password" type="password" label="password" value={values.password} onChange={handleInputChange} error={errors.password} />
+              <Controls.Input variant="standard" name="email" label="Email" value={values.email} onChange={handleInputChange} error={errors.email} />
+              <Controls.Input variant="standard" name="password" type="password" label="Password" value={values.password} onChange={handleInputChange} error={errors.password} />
               <Controls.Button text="Submit" type="submit" className={classes.submitBtn} />
               <Typography variant="caption" gutterBottom component="div" mb={2} mt={2} className={classes.captionTxt}>Don't have an account? <Link className={classes.linkTxt} to="/register"> Sign Up Now</Link></Typography>
             </Box>
@@ -108,10 +120,20 @@ const Login = () => {
             </Box>
           </Grid>
         </Grid>
+        <Notification 
+        notify={notify}
+        setNotify={setNotify}
+      />
         </Form>
       </Paper>
     </Box>
   )
 }
 
-export default Login;
+const mapStateToProps = (state) => {
+  // console.log(state.User);
+  return state;
+}
+
+export default connect(mapStateToProps)(Login);
+

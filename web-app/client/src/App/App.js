@@ -3,6 +3,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Root from '../Root'
 import { Provider } from 'react-redux'
 import store from '../store/store'
+import { PersistGate } from 'redux-persist/integration/react'
+import { persistStore } from 'redux-persist'
 
 const theme = createTheme({
   palette: {
@@ -37,11 +39,15 @@ const theme = createTheme({
   },
 })
 
+let persistor = persistStore(store)
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <Provider store={store}>
+      <PersistGate loading={<div><p>Loading...</p></div>} persistor={persistor}>
         <Root />
+        </PersistGate>
       </Provider>
     </ThemeProvider>
   );

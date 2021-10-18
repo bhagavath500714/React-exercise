@@ -8,6 +8,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import SearchIcon from '@mui/icons-material/Search';
 import { useHistory } from 'react-router';
+import { useDispatch, useSelector, connect } from 'react-redux'
 
 
 
@@ -53,9 +54,11 @@ const Header = () => {
   const classes = useStyles();
   const history = useHistory()
   const [open, setopen] = useState(false);
+  const dispatch = useDispatch();
 
   function handleLogout(){
     window.sessionStorage.clear();
+    dispatch({ type: 'RESET_USER', value: null})
     history.replace("/")
   }
 
@@ -87,11 +90,15 @@ const Header = () => {
       </Toolbar>
     </AppBar>
     <Menu open={open}  
-        anchorPosition={{
+        anchorOrigin={{
           vertical: 'top',
           horizontal: 'center'
         }}
-        style={{top:13}}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "center"
+        }}
+        style={{top:48}}
         onClose={()=>setopen(false)}
         anchorEl={document.getElementById("open-profile")}
       >

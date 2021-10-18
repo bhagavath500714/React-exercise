@@ -22,3 +22,8 @@ export const userRegisteration = async (data) => {
 export const userLogin = async (data) => {
     return axios.post(API_URL + "/login", data, { headers: {Authorization: getToken() }})
 }
+
+//get user
+export const getAllUsers = ()=>{
+    return axios.get(API_URL + "/", { headers: {Authorization: getToken() }})
+}
