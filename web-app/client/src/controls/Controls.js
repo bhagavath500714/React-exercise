@@ -4,7 +4,7 @@ import Select from './Select';
 import CheckBox from './CheckBox';
 import Picker from './Picker';
 import Button from './Button';
-// import ActionButton from './ActionButton';
+import ActionButton from './ActionButton';
 
 const Controls = {
     Input,
@@ -12,7 +12,8 @@ const Controls = {
     Select,
     CheckBox,
     Picker,
-    Button
+    Button,
+    ActionButton
 }
 
 export default Controls;

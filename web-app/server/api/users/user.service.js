@@ -12,7 +12,7 @@ module.exports = {
           data.mobile,
           data.city,
           data.gender,
-          data.departmentId,
+          data.department,
           data.hireDate,
           data.isPermanent
         ],

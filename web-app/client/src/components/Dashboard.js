@@ -9,12 +9,17 @@ import Controls from '../controls/Controls';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import Popup from '../hooks/Popup';
+import RegistartionForm from './register/RegistartionForm';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import Notification from '../hooks/Notification';
 
 const headCells = [
   { id: 'fullName', label: 'Employee Name' },
   { id: 'email', label: 'Email Address (Personal)' },
   { id: 'mobile', label: 'Mobile Number' },
-  { id: 'department', label: 'Department', disableSorting: true },
+  { id: 'department', label: 'Department'},
+  { id: 'actions', label: 'Actions', disableSorting: true  }
 ]
 
 const useStyles = makeStyles(theme => ({
@@ -38,6 +43,8 @@ export default function Dashboard() {
   const [records, setRecords] = useState([])
   const [filterFn, setFilterFn] = useState({fn: items => { return items; }})
   const [openPopup, setOpenPopup] = useState(false);
+  const [recordForEdit, setRecordForEdit] = useState(null)
+  const [notify, setNotify] = useState({ isOpen: false, message: '', type: 'info' })
   const { TblContainer, TblHead, TblPagination, recordsAfterPagingAndSorting } = useTable(records, headCells, filterFn);
 
   useEffect(() => {
@@ -48,10 +55,11 @@ export default function Dashboard() {
     employeeService.getAllUsers().then((res) => {
       console.log('res--', res);
       if (res.data.success === 1) {
+        console.log('new-user')
         let employees = res.data.data;
         let departments = employeeService.getDepartmentCollection();
-       const newVal = employees.map(x => ({
-          ...x, department: departments[x.department - 1].title
+        const newVal = employees.map(x => ({
+          ...x, department: departments[x.department - 1]?.title
         }))
         setRecords(newVal);
       }
@@ -66,6 +74,92 @@ export default function Dashboard() {
         return items;
         else
         return items.filter(x => x.fullName.toLowerCase().includes(target.value))
+      }
+    })
+  }
+
+  const addOrEdit = (employee, resetForm) => {
+    if (employee.id === 0) {
+      employeeService.userRegisteration(employee).then((res) => {
+          //  console.log('res--', res);
+          if (res.data.success === 1) {
+            console.log('registered successfully');
+            resetForm();
+            setOpenPopup(false);
+            getUsers();
+                 setNotify({
+            isOpen: true,
+            message: 'Submitted Successfully',
+            type: 'success'
+          })
+          }
+        })
+      }
+      else {
+        console.log ('-----update----', employee);
+        employeeService.updateUsers(employee).then((res) => {
+          // console.log('res--', res);
+          if (res.data.success === 1) {
+            console.log('Updated successfully');
+            setOpenPopup(false);
+            getUsers();
+                 setNotify({
+            isOpen: true,
+            message: 'Updated Successfully',
+            type: 'info'
+          })
+          }
+        })
+      }
+  }
+
+  const openInPopup = item => {
+    console.log('---item--', item);
+    
+    setRecordForEdit(checkDept(item))
+    setOpenPopup(true)
+  }
+
+  const checkDept = (item) => {
+    // console.log('------elemnet--', element);
+    
+    switch(item.department){
+      case "Development":
+      return {
+        ...item,
+        department: '1',
+      }  
+      case "Marketing":
+        return {
+          ...item,
+          department: '2',
+        } 
+        case "Accounting":
+          return {
+            ...item,
+            department: '3',
+          } 
+          case "HR":
+            return {
+              ...item,
+              department: '4',
+            } 
+      default:
+        return item;
+    }
+  }
+  
+  const onDelete = id => {
+    console.log('--------------------dellll', id);
+    employeeService.deleteUsers(id).then((res) => {
+      if (res.data.success === 1) {
+        console.log('deleted successfully');
+        getUsers();
+        setNotify({
+        isOpen: true,
+        message: 'Deleted Successfully',
+        type: 'success'
+      })
       }
     })
   }
@@ -93,13 +187,26 @@ export default function Dashboard() {
             <TableCell>{item.email}</TableCell>
             <TableCell>{item.mobile}</TableCell>
             <TableCell>{item.department}</TableCell>
+            <TableCell>
+                    <Controls.ActionButton color="primary" onClick = {() => {openInPopup(item)}}>
+                        <EditOutlinedIcon fontSize="small" />
+                    </Controls.ActionButton>
+                    <Controls.ActionButton color="secondary" onClick = {() => {onDelete(item.id)}}>
+                        <DeleteOutlinedIcon fontSize="small" />
+                    </Controls.ActionButton>
+                  </TableCell>
           </TableRow>))}
         </TableBody>
       </TblContainer>
       <TblPagination />
     </Paper>
     <Popup title="Employee Form" openPopup={openPopup} setOpenPopup={setOpenPopup}>
+      <RegistartionForm openPopup={openPopup} addOrEdit={addOrEdit} recordForEdit={recordForEdit} />
     </Popup>
+    <Notification
+        notify={notify}
+        setNotify={setNotify}
+      />
     </>
   )
 }

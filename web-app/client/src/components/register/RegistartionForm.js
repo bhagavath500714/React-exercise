@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Grid, Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Controls from '../../controls/Controls';
@@ -6,6 +6,7 @@ import { useForm, Form } from '../../hooks/useForm';
 import * as employeeService from '../../services/employeeServices';
 import { Link } from "react-router-dom"
 import Notification from '../../hooks/Notification';
+import { useHistory } from "react-router-dom";
 
 const initialFvalue = {
   id: 0,
@@ -15,7 +16,7 @@ const initialFvalue = {
   mobile: '',
   city: '',
   gender: 'male',
-  departmentId: '',
+  department: '',
   hireDate: new Date(),
   isPermanent: false,
 }
@@ -32,7 +33,10 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function RegistartionForm() {
+export default function RegistartionForm(props) {
+  const { openPopup, addOrEdit, recordForEdit } = props;
+  const history = useHistory();
+  const [isregister, setIsRegister] = useState(null);
   const validate = (fieldValues = values) => {
     let temp = { ...errors }
     if ('fullName' in fieldValues)
@@ -41,8 +45,8 @@ export default function RegistartionForm() {
       temp.email = (/$^|.+@.+..+/).test(values.email) ? '' : 'Email is not valid.'
     if ('mobile' in fieldValues)
       temp.mobile = fieldValues.mobile.length > 9 ? '' : 'Minimum 10 numbers required.'
-    if ('departmentId' in fieldValues)
-      temp.departmentId = fieldValues.departmentId.length !== 0 ? '' : 'This field is required.'
+    if ('department' in fieldValues)
+      temp.department = fieldValues.department.length !== 0 ? '' : 'This field is required.'
     setErrors({
       ...temp
     })
@@ -51,39 +55,65 @@ export default function RegistartionForm() {
   }
   const { values, setValues, errors, setErrors, handleInputChange, resetForm } = useForm(initialFvalue, true, validate);
   const classes = useStyles();
-  const [notify, setNotify] = useState({isOpen:false, message:'', type:''})
+  const [notify, setNotify] = useState({ isOpen: false, message: '', type: 'info' })
+
+  useEffect(()=>{
+    checkHistory();
+  },[])
+
+  const checkHistory =  () => {
+    let pathValue = history.location.pathname
+    let pathState = pathValue.substr(1);
+    console.log('pathval', pathState);
+    setIsRegister(pathState);
+  }
 
   const handleSubmit = e => {
     e.preventDefault();
-    if (validate())
-      employeeService.userRegisteration(values).then((res) => {
-        //  console.log('res--', res);
-        if (res.data.success === 1) {
-          console.log('registered successfully');
-          resetForm();
-          setNotify({
-            isOpen: true,
-            message: 'Submitted Successfully',
-            type: 'success'
-          })
-        }
-      })
-
+    if (validate()) {
+      if (isregister === 'register') {
+        employeeService.userRegisteration(values).then((res) => {
+          //  console.log('res--', res);
+          if (res.data.success === 1) {
+            console.log('registered successfully');
+            resetForm();
+            setNotify({
+              isOpen: true,
+              message: 'Submitted Successfully',
+              type: 'success'
+            })
+          }
+        })
+      } else {
+        addOrEdit(values, resetForm);
+      }
   }
+  }
+
+  useEffect(() => {
+    if(recordForEdit != null)
+    setValues({
+        ...recordForEdit
+      })
+  }, [recordForEdit])
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Box textAlign="left">
-      <Link to="/"><Typography variant="caption" gutterBottom component="div" mt={1} mb={3} ml={1} className={classes.signinTxt}>
-        Back to login
-      </Typography>
-      </Link>
-      </Box>
-      <Box textAlign="center">
-      <Typography variant="h5" gutterBottom component="div" mt={4} mb={5} className={classes.signinTxt}>
-        REGISTERATION
-      </Typography>
-      </Box>
+      {!openPopup &&
+        <>
+          <Box textAlign="left">
+            <Link to="/"><Typography variant="caption" gutterBottom component="div" mt={1} mb={3} ml={1} className={classes.signinTxt}>
+              Back to login
+            </Typography>
+            </Link>
+          </Box>
+          <Box textAlign="center">
+            <Typography variant="h5" gutterBottom component="div" mt={4} mb={5} className={classes.signinTxt}>
+              REGISTERATION
+            </Typography>
+          </Box>
+        </>
+      }
       <Grid container>
         <Grid item xs={6}>
           <Controls.Input name="fullName" label="Full Name" value={values.fullName} onChange={handleInputChange} error={errors.fullName} />
@@ -94,7 +124,7 @@ export default function RegistartionForm() {
         </Grid>
         <Grid item xs={6}>
           <Controls.RadioGroup label="Gender" name="gender" value={values.gender} onChange={handleInputChange} items={genderItems} />
-          <Controls.Select name="departmentId" label="Department" value={values.departmentId} onChange={handleInputChange} options={employeeService.getDepartmentCollection()} error={errors.departmentId} />
+          <Controls.Select name="department" label="Department" value={values.department} onChange={handleInputChange} options={employeeService.getDepartmentCollection()} error={errors.department} />
           <Controls.Picker name="hireDate" label="Hire Date" value={values.hireDate} onChange={handleInputChange} />
           <Controls.CheckBox name="isPermanent" label="Permanent Employee" value={values.isPermanent} onChange={handleInputChange} />
           <Box>
@@ -103,7 +133,7 @@ export default function RegistartionForm() {
           </Box>
         </Grid>
       </Grid>
-      <Notification 
+      <Notification
         notify={notify}
         setNotify={setNotify}
       />
