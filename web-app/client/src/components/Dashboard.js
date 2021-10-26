@@ -13,6 +13,7 @@ import RegistartionForm from './register/RegistartionForm';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import Notification from '../hooks/Notification';
+import ConfirmDialog from '../hooks/ConfirmDialog';
 
 const headCells = [
   { id: 'fullName', label: 'Employee Name' },
@@ -45,6 +46,7 @@ export default function Dashboard() {
   const [openPopup, setOpenPopup] = useState(false);
   const [recordForEdit, setRecordForEdit] = useState(null)
   const [notify, setNotify] = useState({ isOpen: false, message: '', type: 'info' })
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' })
   const { TblContainer, TblHead, TblPagination, recordsAfterPagingAndSorting } = useTable(records, headCells, filterFn);
 
   useEffect(() => {
@@ -97,10 +99,12 @@ export default function Dashboard() {
       }
       else {
         console.log ('-----update----', employee);
+
         employeeService.updateUsers(employee).then((res) => {
           // console.log('res--', res);
           if (res.data.success === 1) {
             console.log('Updated successfully');
+            setRecordForEdit(null)
             setOpenPopup(false);
             getUsers();
                  setNotify({
@@ -150,7 +154,12 @@ export default function Dashboard() {
   }
   
   const onDelete = id => {
-    console.log('--------------------dellll', id);
+    // if(window.confirm('Are u sure to delte record?')){}
+    // console.log('--------------------dellll', id);
+    setConfirmDialog({
+      ...confirmDialog,
+      isOpen: false
+    })
     employeeService.deleteUsers(id).then((res) => {
       if (res.data.success === 1) {
         console.log('deleted successfully');
@@ -158,7 +167,7 @@ export default function Dashboard() {
         setNotify({
         isOpen: true,
         message: 'Deleted Successfully',
-        type: 'success'
+        type: 'error'
       })
       }
     })
@@ -177,7 +186,7 @@ export default function Dashboard() {
               }}
               onChange={handleSearch}
           />
-          <Controls.Button text="Add New" variant="outlined" startIcon = {<AddIcon />} className={classes.newButton} onClick={() => setOpenPopup(true)}/>
+          <Controls.Button text="Add New" variant="outlined" startIcon = {<AddIcon />} className={classes.newButton} onClick={() => { setOpenPopup(true); setRecordForEdit(null); }} />
         </Toolbar>
       <TblContainer>
         <TblHead />
@@ -191,7 +200,12 @@ export default function Dashboard() {
                     <Controls.ActionButton color="primary" onClick = {() => {openInPopup(item)}}>
                         <EditOutlinedIcon fontSize="small" />
                     </Controls.ActionButton>
-                    <Controls.ActionButton color="secondary" onClick = {() => {onDelete(item.id)}}>
+                    <Controls.ActionButton color="secondary" onClick = {() => { setConfirmDialog({
+                      isOpen:true,
+                      title: 'Are you sure to delete this record?',
+                      subTitle: "You can't undo this operation",
+                      onConfirm: () => { onDelete(item.id) }
+                    }) }}>  {/* onDelete(item.id) */}
                         <DeleteOutlinedIcon fontSize="small" />
                     </Controls.ActionButton>
                   </TableCell>
@@ -207,6 +221,7 @@ export default function Dashboard() {
         notify={notify}
         setNotify={setNotify}
       />
+      <ConfirmDialog confirmDialog = {confirmDialog} setConfirmDialog = {setConfirmDialog} />
     </>
   )
 }

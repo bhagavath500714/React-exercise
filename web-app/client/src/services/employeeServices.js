@@ -10,7 +10,10 @@ export const getDepartmentCollection = () => ([
 ])
 
 export const getToken = () => {
-    return window.sessionStorage.getItem("token")
+    const token = window.sessionStorage.getItem("token");
+    const tokenText = 'Bearer ';
+    const tokenData = tokenText + token;
+    return tokenData;
  }
 
 //Register
